@@ -61,6 +61,7 @@ export default class Graffiti extends Vue {
   @Prop() private current!: object;
 
   @Watch("current") onCurrentChange(value: any) {
+    this.reset();
     const { selectType, canvas: obj, content, top, left } = value;
     console.log(selectType, obj, content);
     switch (selectType) {
