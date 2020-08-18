@@ -6,10 +6,15 @@
     ></Menu>
     <div class="data-content">
       <div class="data-list">
-         <div class="data-title">批注列表</div>
-        <div v-for="(item, index) in dataList" :key="`data-${index}`" class="data-item" @click="handleLook(item)">
-          <div class="content">{{ item.content.content}}</div>
-          <div class="user">{{ item.content.user}}</div>
+        <div class="data-title">批注列表</div>
+        <div
+          v-for="(item, index) in dataList"
+          :key="`data-${index}`"
+          class="data-item"
+          @click="handleLook(item)"
+        >
+          <div class="content">{{ item.content.content }}</div>
+          <div class="user">{{ item.content.user }}</div>
         </div>
       </div>
       <Graffiti
@@ -50,28 +55,28 @@ export default class Index extends Vue {
   private dataList: object[] = [];
   private current: object = {};
 
-  private created() {};
+  private created() {}
 
   private beforeRouteEnter(to: any, from: any, next: any) {
     console.log(color.Green);
     next();
-  };
+  }
 
   private handleClick() {
     this.message = "change";
-  };
+  }
 
   private handleMenuChange(i: number) {
     this.selectType = i;
-  };
+  }
 
   private handleColorChange(color: string) {
     this.selectColor = color;
-  };
+  }
 
   private onAdd(data: object) {
     this.dataList.push(data);
-  };
+  }
 
   private handleLook(item: object) {
     this.current = item;
@@ -80,32 +85,32 @@ export default class Index extends Vue {
 </script>
 
 <style lang="scss" scoped>
-.data-content{
+.data-content {
   display: flex;
   align-items: flex-start;
-  .canvas-part{
+  .canvas-part {
     flex: none;
   }
-  .data-list{
+  .data-list {
     width: 300px;
     border: 1px solid #e8e8e8;
     height: 500px;
     margin-right: 12px;
-    .data-title{
+    .data-title {
       line-height: 40px;
       background-color: #f8f8f8;
       border-bottom: 1px solid #e8e8e8;
       font-weight: 600px;
       padding: 0 12px;
     }
-    .data-item{
+    .data-item {
       border-bottom: 1px solid #e8e8e8;
       padding: 12px;
       cursor: pointer;
-      .content{
+      .content {
         color: #333;
       }
-      .user{
+      .user {
         font-size: 12px;
         color: #999;
         text-align: right;

@@ -10,6 +10,11 @@ const routes = [
     name: "home",
     component: index,
   },
+  {
+    path: "/game",
+    name: "game",
+    component: () => import("../views/game.vue")
+  }
 ];
 
 const router = new VueRouter({

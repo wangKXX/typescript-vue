@@ -10,7 +10,7 @@
     <div
       class="modal"
       v-if="isShow"
-      :style="`top: ${end_draw_y}px; left: ${end_draw_x}px`"
+      :style="`top: ${modalPositionTop}px; left: ${modalPositionLeft}px`"
     >
       <div class="modal-content">
         <div class="modal-label">标注人：</div>
@@ -60,27 +60,6 @@ export default class Graffiti extends Vue {
   @Prop() private selectColor!: string;
   @Prop() private current!: object;
 
-  @Watch("current") onCurrentChange(value: any) {
-    this.reset();
-    const { selectType, canvas: obj, content, top, left } = value;
-    console.log(selectType, obj, content);
-    switch (selectType) {
-      case 0:
-        this.canvasUtils.drawPen(obj);
-        break;
-      case 1:
-        this.canvasUtils.drawRect(obj);
-        break;
-      case 2:
-        this.canvasUtils.drawLine(obj);
-        break;
-      case 3:
-        this.canvasUtils.drawCire(obj);
-        break;
-    }
-    Object.assign(this, { ...content, isShow: true, end_draw_x: left, end_draw_y: top });
-  }
-
   private imageW: number = 0;
   private imageH: number = 0;
   private canvas: any = null;
@@ -94,6 +73,63 @@ export default class Graffiti extends Vue {
   private user: any = null;
   private content: any = null;
   private publish: any = null;
+  private penPoints: object[] = [];
+
+  public get modalPositionTop(): number {
+    return this.setSildePositionTop();
+  }
+
+  public get modalPositionLeft(): number {
+    return this.setSildePositionLeft();
+  }
+
+  @Watch("current") onCurrentChange(value: any) {
+    this.reset();
+    const { selectType, canvas: obj, content, top, left } = value;
+    console.log(selectType, obj, content);
+    switch (selectType) {
+      case 0:
+        obj.forEach((item: object) => {
+          this.canvasUtils.drawPen(item);
+        });
+        break;
+      case 1:
+        this.canvasUtils.drawRect(obj);
+        break;
+      case 2:
+        this.canvasUtils.drawLine(obj);
+        break;
+      case 3:
+        this.canvasUtils.drawCire(obj);
+        break;
+    }
+    Object.assign(this, {
+      ...content,
+      isShow: true,
+      end_draw_x: left,
+      end_draw_y: top
+    });
+  }
+
+  private setSildePositionTop() {
+    const { end_draw_y, start_draw_y, imageH } = this;
+    let top = end_draw_y - (imageH - 300) / 2;
+    const flag = end_draw_y + 20;
+    if (flag >= imageH) {
+    }
+
+    return top;
+  }
+
+  private setSildePositionLeft() {
+    const { end_draw_x, start_draw_x, imageW } = this;
+    let top = end_draw_x + 10;
+    const flag = end_draw_x + 20;
+    if (flag >= imageW) {
+    }
+
+    return top;
+  }
 
   public $refs!: {
     canvas: HTMLCanvasElement;
@@ -140,14 +176,7 @@ export default class Graffiti extends Vue {
     } = this;
     switch (this.selectType) {
       case 0:
-        obj = {
-          x: this.start_draw_x,
-          y: this.start_draw_y,
-          ex: drawX,
-          ey: drawY,
-          color: this.selectColor,
-          type: "m_up"
-        };
+        obj = this.penPoints;
         break;
       case 1:
         obj = {
@@ -190,7 +219,7 @@ export default class Graffiti extends Vue {
       },
       selectType,
       top: drawY,
-      left: drawX,
+      left: drawX
     };
     this.$emit("onAdd", params);
     this.reset();
@@ -208,6 +237,7 @@ export default class Graffiti extends Vue {
       user: null,
       content: null,
       publish: null,
+      penPoints: [],
     });
     this.canvasUtils.clearCanvas();
   }
@@ -216,10 +246,10 @@ export default class Graffiti extends Vue {
     if (this.isShow) {
       return;
     }
+    this.canvasUtils.saveCanvasData();
     let drawX = $event.clientX;
     let drawY = $event.clientY;
     this.isStart = true;
-    this.canvasUtils.saveCanvasData();
     let location = this.getLocation(drawX, drawY);
     drawX = location.x;
     drawY = location.y;
@@ -327,6 +357,7 @@ export default class Graffiti extends Vue {
           type: "m_move"
         };
         this.canvasUtils.drawPen(obj);
+        this.penPoints.push(obj);
         this.start_draw_x = drawX;
         this.start_draw_y = drawY;
         break;

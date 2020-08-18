@@ -18,6 +18,9 @@
     "ordered-imports": false,
     "quotemark": [true, "double"],
     "arrow-parens": false,
-    "no-unused-variable": false
+    "no-unused-variable": false,
+    "type-literal-delimiter": false,
+    "eofline": false,
+    "semicolon": [true, "always"]
   }
 }

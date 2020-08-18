@@ -45,7 +45,9 @@ export default class BlackborderService {
 
   // 渲染canvas数据
   public drawCanvas(): void {
-    this.ctx.putImageData(this.canvasData, 0, 0, 0, 0, this.canvas.width, this.canvas.height);
+    if (this.canvasData) {
+      this.ctx.putImageData(this.canvasData, 0, 0, 0, 0, this.canvas.width, this.canvas.height);
+    }
   }
 
   // 矩形
