@@ -19,7 +19,7 @@
       </div>
       <Graffiti
         :src="
-          'https://c-ssl.duitang.com/uploads/item/201512/29/20151229183756_SxVkw.jpeg'
+          require('../assets/1.jpg')
         "
         :select-type="selectType"
         :select-color="selectColor"

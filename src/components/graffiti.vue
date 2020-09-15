@@ -1,5 +1,5 @@
 <template>
-  <div class="graffiti-warp">
+  <div class="graffiti-warp" @mousewheel="handleMouseWheel">
     <img :src="src" ref="img" />
     <canvas
       ref="canvas"
@@ -74,6 +74,8 @@ export default class Graffiti extends Vue {
   private content: any = null;
   private publish: any = null;
   private penPoints: object[] = [];
+  private scaleNumber: number = 1;
+  private isImgCanMove: boolean = false;
 
   public get modalPositionTop(): number {
     return this.setSildePositionTop();
@@ -109,6 +111,20 @@ export default class Graffiti extends Vue {
       end_draw_x: left,
       end_draw_y: top
     });
+  }
+
+  private handleMouseWheel(e: any) {
+    const { wheelDelta } = e;
+    const { imageW, imageH, scaleNumber } = this;
+    if (wheelDelta > 0) {
+      // 放大
+      this.scaleNumber = scaleNumber + 1;
+      this.isImgCanMove = this.scaleNumber > 1;
+    } else {
+      this.scaleNumber = scaleNumber - 1;
+    }
+    const scale = 1 + this.scaleNumber / 10;
+    this.$refs.img.style.transform = `scale(${scale})`;
   }
 
   private setSildePositionTop() {
@@ -415,6 +431,7 @@ export default class Graffiti extends Vue {
 .graffiti-warp {
   width: 800px;
   position: relative;
+  overflow: hidden;
   img {
     width: 100%;
   }
