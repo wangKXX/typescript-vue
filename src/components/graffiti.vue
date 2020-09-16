@@ -76,6 +76,8 @@ export default class Graffiti extends Vue {
   private penPoints: object[] = [];
   private scaleNumber: number = 1;
   private isImgCanMove: boolean = false;
+  private startX!: number;
+  private startY!: number;
 
   public get modalPositionTop(): number {
     return this.setSildePositionTop();
@@ -84,11 +86,25 @@ export default class Graffiti extends Vue {
   public get modalPositionLeft(): number {
     return this.setSildePositionLeft();
   }
+  @Watch("scaleNumber") onScaleNumber(value: any) {
+    if (+value !== 1) {
+      this.isImgCanMove = true;
+    } else {
+      this.isImgCanMove = false;
+    }
+  }
+
+  @Watch("selectType") onSelectTypeChange(value: any) {
+    if (+value === 4) {
+      this.$refs.img.style.transform = `scale(1)`;
+      this.$refs.canvas.style.transform = `scale(1)`;
+      this.scaleNumber = 1;
+    }
+  }
 
   @Watch("current") onCurrentChange(value: any) {
     this.reset();
     const { selectType, canvas: obj, content, top, left } = value;
-    console.log(selectType, obj, content);
     switch (selectType) {
       case 0:
         obj.forEach((item: object) => {
@@ -124,7 +140,10 @@ export default class Graffiti extends Vue {
       this.scaleNumber = scaleNumber - 1;
     }
     const scale = 1 + this.scaleNumber / 10;
-    this.$refs.img.style.transform = `scale(${scale})`;
+    this.$refs.img.style.transform = `scale(${scale}) ${this.matchValue(
+      "translate"
+    )}`;
+    this.$refs.canvas.style.transform = `scale(${scale})`;
   }
 
   private setSildePositionTop() {
@@ -253,7 +272,7 @@ export default class Graffiti extends Vue {
       user: null,
       content: null,
       publish: null,
-      penPoints: [],
+      penPoints: []
     });
     this.canvasUtils.clearCanvas();
   }
@@ -265,6 +284,9 @@ export default class Graffiti extends Vue {
     this.canvasUtils.saveCanvasData();
     let drawX = $event.clientX;
     let drawY = $event.clientY;
+    const { offsetX, offsetY } = $event;
+    this.startX = offsetX;
+    this.startY = offsetY;
     this.isStart = true;
     let location = this.getLocation(drawX, drawY);
     drawX = location.x;
@@ -274,7 +296,11 @@ export default class Graffiti extends Vue {
   }
 
   private mouseUpEvent($event: any) {
+    this.isStart = false;
     if (this.isShow) {
+      return;
+    }
+    if (this.isImgCanMove) {
       return;
     }
     let drawX = $event.clientX;
@@ -284,7 +310,6 @@ export default class Graffiti extends Vue {
     drawY = location.y;
     this.end_draw_x = drawX;
     this.end_draw_y = drawY;
-    this.isStart = false;
     this.isShow = true;
     let obj: any = {};
     switch (this.selectType) {
@@ -347,12 +372,33 @@ export default class Graffiti extends Vue {
     }
   }
 
+  private matchValue(str: string) {
+    const { transform = "" }: { transform: any } = this.$refs.img.style;
+    return (
+      (transform.match(new RegExp(`\.*${str}\((.*?)\)`)) &&
+        transform.match(new RegExp(`\.*${str}\((.*?)\)`)).input) ||
+      ""
+    );
+  }
+
   private mouseMoveEvent($event: any) {
     if (this.isShow) {
       return;
     }
     if (!this.isStart) {
       return false;
+    }
+    const { startX, startY, isImgCanMove, imageW, imageH } = this;
+    if (isImgCanMove) {
+      const { offsetX, offsetY } = $event;
+      const offsetW = offsetX - startX;
+      const offsetH = offsetY - startY;
+      this.$refs.img.style.transform = `translate(${offsetW}px,${offsetH}px) ${this.matchValue(
+        "scale"
+      )}`;
+      this.startX = offsetX;
+      this.startY = offsetY;
+      return;
     }
     let drawX = $event.clientX;
     let drawY = $event.clientY;
@@ -362,6 +408,7 @@ export default class Graffiti extends Vue {
     this.end_draw_x = drawX;
     this.end_draw_y = drawY;
     let obj: any = {};
+
     switch (this.selectType) {
       case 0:
         obj = {

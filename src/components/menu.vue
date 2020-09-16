@@ -27,7 +27,7 @@ export default class Menu extends Vue {
   private data: string[] = [];
 
   private created() {
-    this.data = ["铅笔", "矩形", "直线", "圆"];
+    this.data = ["铅笔", "矩形", "直线", "圆", "重置"];
   }
 
   private handleClick(i: number) {

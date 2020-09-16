@@ -13,6 +13,18 @@ export default class BlackborderService {
     this.ctx = canvas.getContext("2d");
   }
 
+  // 设置放大缩小
+  public setTransform(scale: number, imageW: number, imageH: number): void {
+    this.ctx.setTransform(
+      scale,
+      0,
+      0,
+      scale,
+      (imageW - imageW * scale) / 2,
+      (imageH - imageH * scale) / 2,
+    );
+  }
+
   // 清除canvas数据
   public clearCanvas(): void {
     const { width, height } = this.canvas;
