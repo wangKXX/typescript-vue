@@ -78,6 +78,10 @@ export default class Graffiti extends Vue {
   private isImgCanMove: boolean = false;
   private startX!: number;
   private startY!: number;
+  private scale: number = 1;
+  private translate: string = "translate(0, 0)";
+  private offsetW: number = 0;
+  private offsetH: number = 0;
 
   public get modalPositionTop(): number {
     return this.setSildePositionTop();
@@ -129,23 +133,6 @@ export default class Graffiti extends Vue {
     });
   }
 
-  private handleMouseWheel(e: any) {
-    const { wheelDelta } = e;
-    const { imageW, imageH, scaleNumber } = this;
-    if (wheelDelta > 0) {
-      // 放大
-      this.scaleNumber = scaleNumber + 1;
-      this.isImgCanMove = this.scaleNumber > 1;
-    } else {
-      this.scaleNumber = scaleNumber - 1;
-    }
-    const scale = 1 + this.scaleNumber / 10;
-    this.$refs.img.style.transform = `scale(${scale}) ${this.matchValue(
-      "translate"
-    )}`;
-    this.$refs.canvas.style.transform = `scale(${scale})`;
-  }
-
   private setSildePositionTop() {
     const { end_draw_y, start_draw_y, imageH } = this;
     let top = end_draw_y - (imageH - 300) / 2;
@@ -172,7 +159,12 @@ export default class Graffiti extends Vue {
   };
 
   private mounted() {
-    this.setImageWH();
+    setTimeout(() => {
+      this.setImageWH();
+    }, 100);
+    document.addEventListener("mouseup", () => {
+      this.isStart = false;
+    })
   }
 
   private setImageWH() {
@@ -301,6 +293,14 @@ export default class Graffiti extends Vue {
       return;
     }
     if (this.isImgCanMove) {
+      const { offsetX, offsetY } = $event;
+      const { startX, startY } = this;
+      const offsetW = offsetX - startX;
+      const offsetH = offsetY - startY;
+      Object.assign(this, {
+        offsetW,
+        offsetH
+      });
       return;
     }
     let drawX = $event.clientX;
@@ -372,13 +372,21 @@ export default class Graffiti extends Vue {
     }
   }
 
-  private matchValue(str: string) {
-    const { transform = "" }: { transform: any } = this.$refs.img.style;
-    return (
-      (transform.match(new RegExp(`\.*${str}\((.*?)\)`)) &&
-        transform.match(new RegExp(`\.*${str}\((.*?)\)`)).input) ||
-      ""
-    );
+  private handleMouseWheel(e: any) {
+    const { wheelDelta } = e;
+    const { imageW, imageH, scaleNumber } = this;
+    if (wheelDelta > 0) {
+      // 放大
+      this.scaleNumber = scaleNumber + 1;
+      this.isImgCanMove = this.scaleNumber > 1;
+    } else {
+      this.scaleNumber = scaleNumber - 1;
+    }
+    const scaleTemp = 1 + this.scaleNumber / 10;
+    const scale = scaleTemp > 3 ? 3 : scaleTemp <= 0.5 ? 0.5 : scaleTemp;
+    this.scale = scale;
+    const { translate } = this;
+    this.$refs.img.style.transform = `scale(${scale}) ${translate}`;
   }
 
   private mouseMoveEvent($event: any) {
@@ -388,16 +396,23 @@ export default class Graffiti extends Vue {
     if (!this.isStart) {
       return false;
     }
-    const { startX, startY, isImgCanMove, imageW, imageH } = this;
+    const { startX, startY, isImgCanMove, imageW, imageH, scale } = this;
     if (isImgCanMove) {
       const { offsetX, offsetY } = $event;
-      const offsetW = offsetX - startX;
-      const offsetH = offsetY - startY;
-      this.$refs.img.style.transform = `translate(${offsetW}px,${offsetH}px) ${this.matchValue(
-        "scale"
-      )}`;
-      this.startX = offsetX;
-      this.startY = offsetY;
+      const tempW = offsetX - startX + this.offsetW;
+      const tempH = offsetY - startY + this.offsetH;
+      const offsetW =
+        tempW > (imageW * scale - imageW) / 2
+          ? (imageW * scale - imageW) / 2
+          : tempW;
+      const offsetH =
+        tempH > (imageH * scale - imageH) / 2
+          ? (imageH * scale - imageH) / 2
+          : tempH;
+      console.log(offsetW, offsetH);
+      this.translate = `translate(${offsetW}px, ${offsetH}px)`;
+      const { translate } = this;
+      this.$refs.img.style.transform = `scale(${scale}) ${translate}`;
       return;
     }
     let drawX = $event.clientX;
